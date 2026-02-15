@@ -5,6 +5,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.pm.ServiceInfo;
 import android.net.VpnService;
 import android.os.Build;
 import android.os.IBinder;
@@ -91,13 +92,23 @@ public class SocksVpnService extends VpnService {
         PendingIntent contentIntent;
         contentIntent = PendingIntent.getActivity(this, 0,
                 new Intent(this, MainActivity.class), intentFlags);
-        startForeground(NOTIFICATION_ID, builder
+        
+        Notification notification = builder
                 .setContentTitle(getString(R.string.notify_title))
                 .setContentText(String.format(getString(R.string.notify_msg), name))
                 .setPriority(Notification.PRIORITY_MIN)
                 .setSmallIcon(R.drawable.ic_vpn)
                 .setContentIntent(contentIntent)
-                .build());
+                .build();
+
+        // На Android 14+ (API 34+) используем specialUse + subtype из манифеста,
+        // иначе линковка ресурсов/политики FGS могут ругаться.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            startForeground(NOTIFICATION_ID, notification,
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE);
+        } else {
+            startForeground(NOTIFICATION_ID, notification);
+        }
 
         // Create an fd.
         configure(name, route, perApp, appBypass, appList, ipv6);

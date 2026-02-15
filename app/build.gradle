@@ -1,13 +1,20 @@
 apply plugin: 'com.android.application'
+apply plugin: 'org.jetbrains.kotlin.android'
 
 android {
-    compileSdkVersion 31
+    compileSdkVersion 34
     defaultConfig {
         applicationId "net.typeblog.socks"
         minSdkVersion 21
-        targetSdkVersion 31
+        targetSdkVersion 34
         versionCode 13
         versionName "1.0.4"
+    }
+    namespace 'net.typeblog.socks'
+    buildFeatures {
+        aidl true
+        buildConfig true
+
     }
     buildTypes {
         release {
@@ -15,8 +22,14 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
+    implementation("androidx.core:core-ktx:1.12.0")
 }

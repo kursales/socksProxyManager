@@ -2,6 +2,7 @@ package net.typeblog.socks.util;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.util.Log;
 
 import java.io.File;
@@ -136,6 +137,20 @@ public class Utility {
             i.putExtra(INTENT_UDP_GW, profile.getUDPGW());
         }
 
-        context.startService(i);
+        try {
+            // Начиная с Android 8 (API 26) сервисы должны стартовать как foreground,
+            // иначе при запуске из фона (например, из BroadcastReceiver) будет исключение.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(i);
+            } else {
+                context.startService(i);
+            }
+        } catch (RuntimeException e) {
+            // На Android 12+ запуск foreground-сервиса из фона тоже может быть запрещён.
+            // В этом случае хотя бы логируем причину, чтобы вызывающая сторона могла
+            // показать пользователю подсказку (открыть приложение и запустить VPN вручную).
+            Log.e(TAG, "Не удалось запустить VPN сервис из текущего состояния приложения", e);
+            throw e;
+        }
     }
 }
